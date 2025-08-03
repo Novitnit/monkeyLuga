@@ -17,8 +17,11 @@ const handler = NextAuth({
             async authorize(credentials, req) {
                 const { name, password } = credentials || {}
 
-                if (!name || !password) {
-                    throw new Error("All fields are required")
+                if (!name) {
+                    throw new Error("username is required")
+                }
+                if (!password) {
+                    throw new Error("Password is required")
                 }
 
                 const user = await prisma.user.findUnique({
@@ -42,6 +45,25 @@ const handler = NextAuth({
     adapter: PrismaAdapter(prisma),
     session: {
         strategy: "jwt"
+    },
+    callbacks:{
+        jwt({ token, user }) {
+            if(user){
+                token.id = user.id
+                token.name = user.name
+                token.role = user.role
+            }
+            return token
+        },
+
+        session({ session, token}){
+            if(token){
+                session.user.id = token.id
+                session.user.name = token.name
+                session.user.role = token.role
+            }
+            return session
+        }
     },
 })
 
