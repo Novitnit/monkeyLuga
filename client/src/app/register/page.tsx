@@ -1,6 +1,8 @@
 "use client"
 import { Button } from "@/component/button";
+import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 export default function RegisterPage() {
@@ -8,6 +10,7 @@ export default function RegisterPage() {
     const [Username, setUsername] = useState("");
     const [Password, setPassword] = useState("");
     const [Error, setError] = useState("");
+    const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -20,7 +23,18 @@ export default function RegisterPage() {
         })
         const data = await res.json();
         if (res.ok) {
-
+            const res = await signIn("credentials", {
+                name: Username,
+                password: Password,
+                redirect: false
+            });
+            if (res?.error) {
+                setError(res.error);
+            }
+            else if (res?.ok) {
+                setError("");
+                router.push("/");
+            }
         }else{
             setError(data.error);
             return;
