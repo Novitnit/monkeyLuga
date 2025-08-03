@@ -1,4 +1,5 @@
 "use client"
+import { Button } from "@/component/button";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -45,12 +46,12 @@ export default function RegisterPage() {
                         value={Password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    <button
+                    <Button
                         type="submit"
                         className="bg-blue-500 hover:bg-blue-600 p-3 rounded mb-4"
                     >
                         Register
-                    </button>
+                    </Button>
                 </form>
                 {Error && <p className="text-red-500 text-sm mb-4">{Error}</p>}
                 <p> Already have an account? <Link href="/login" className="text-blue-400 hover:underline"> Login</Link></p>

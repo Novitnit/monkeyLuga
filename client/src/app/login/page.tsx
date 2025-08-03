@@ -1,5 +1,6 @@
 "use client"
 
+import { Button } from "@/component/button";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -48,12 +49,9 @@ export default function LoginPage() {
                         value={Password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    <button
-                        type="submit"
-                        className="bg-blue-500 hover:bg-blue-600 p-3 rounded mb-4"
-                    >
+                    <Button type="submit">
                         Login
-                    </button>
+                    </Button>
                 </form>
                 {Error && <p className="text-red-500 text-sm mb-4">{Error}</p>}
                 <p> Don't have an account? <Link href="/register" className="text-blue-400 hover:underline"> Register</Link></p>
