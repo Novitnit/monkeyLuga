@@ -17,8 +17,11 @@ const handler = NextAuth({
             async authorize(credentials, req) {
                 const { name, password } = credentials || {}
 
-                if (!name || !password) {
-                    throw new Error("All fields are required")
+                if (!name) {
+                    throw new Error("username is required")
+                }
+                if (!password) {
+                    throw new Error("Password is required")
                 }
 
                 const user = await prisma.user.findUnique({
