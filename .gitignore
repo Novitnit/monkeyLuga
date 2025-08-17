@@ -44,3 +44,5 @@ next-env.d.ts
 vscode/
 client/src/generated/prisma/
 logs/
+
+dist/
