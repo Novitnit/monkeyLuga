@@ -46,3 +46,5 @@ client/src/generated/prisma/
 logs/
 
 dist/
+
+.vscode/
