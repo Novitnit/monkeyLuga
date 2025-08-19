@@ -30,15 +30,27 @@ function write(message?: any, ...optionalParams: any[]) {
 }
 
 function info(message?: any, ...optionalParams: any[]) {
-  write(`[INFO] ${message}`, ...optionalParams);
+  const allMessages = [message, ...optionalParams];
+  const formattedMessage = allMessages
+    .map(msg => typeof msg === 'object' ? JSON.stringify(msg, null, 2) : msg)
+    .join(' ');
+  write(`[INFO] ${formattedMessage}`, ...optionalParams);
 }
 
 function error(message?: any, ...optionalParams: any[]) {
-  write(`[ERROR] ${message}`, ...optionalParams);
+  const allMessages = [message, ...optionalParams];
+  const formattedMessage = allMessages
+    .map(msg => typeof msg === 'object' ? JSON.stringify(msg, null, 2) : msg)
+    .join(' ');
+  write(`[ERROR] ${formattedMessage}`);
 }
 
 function warn(message?: any, ...optionalParams: any[]) {
-  write(`[WARN] ${message}`, ...optionalParams);
+  const allMessages = [message, ...optionalParams];
+  const formattedMessage = allMessages
+    .map(msg => typeof msg === 'object' ? JSON.stringify(msg, null, 2) : msg)
+    .join(' ');
+  write(`[WARN] ${formattedMessage}`);
 }
 
 export default {
