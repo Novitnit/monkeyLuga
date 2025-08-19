@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import bcrypt from "bcryptjs"
 import { PrismaClient } from "@/generated/prisma"
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient()
 
@@ -57,10 +58,15 @@ const handler = NextAuth({
         },
 
         session({ session, token}){
+
+            const payload = token as { id: string; name: string; role: string };
+            const gameToken = jwt.sign(payload, process.env.SECRET as string);
+
             if(token){
                 session.user.id = token.id
                 session.user.name = token.name
                 session.user.role = token.role
+                session.user.token = gameToken;
             }
             return session
         }
