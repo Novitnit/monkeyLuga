@@ -4,6 +4,7 @@ import { createServer } from 'http';
 import dotenv from 'dotenv';
 import { verifyToken, readToken } from './auth';
 import { ClientToServerEvents, InterServerEvents, ServerToClientEvents, SocketData } from './types/scoket';
+import { createRoom } from './room_management/createRoom';
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ io.use((socket, next) => {
 
 io.on('connection', (socket) => {
   console.log(`${socket.data.user.name} connected`);
+  createRoom(socket);
 });
 
 httpServer.listen(PORT, () => {

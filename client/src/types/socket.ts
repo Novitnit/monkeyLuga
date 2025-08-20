@@ -5,15 +5,3 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
   createRoom: (data: { difficulty: "M1" | "M2" | "M3" }) => void;
 }
-
-export interface InterServerEvents {
-
-}
-
-export interface SocketData {
-  user:{
-    uuid:string
-    name:string
-    role:"USER"|"ADMIN"
-  }
-}

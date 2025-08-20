@@ -13,6 +13,12 @@ export default withAuth(
       }
     }
 
+    if (pathname.startsWith('/game')) {
+      if (!token) {
+        return NextResponse.redirect(new URL('/login', req.url));
+      }
+    }
+
     if (pathname.startsWith('/home')) {
       if (!token) {
         return NextResponse.redirect(new URL('/login', req.url));
@@ -31,5 +37,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ['/admin/:path*', '/home/:path*', '/login', '/register'],
+  matcher: ['/admin/:path*', '/home/:path*', '/login', '/register', '/game/:path*'],
 };
