@@ -34,7 +34,7 @@ function info(message?: any, ...optionalParams: any[]) {
   const formattedMessage = allMessages
     .map(msg => typeof msg === 'object' ? JSON.stringify(msg, null, 2) : msg)
     .join(' ');
-  write(`[INFO] ${formattedMessage}`, ...optionalParams);
+  write(`[INFO] ${formattedMessage}`);
 }
 
 function error(message?: any, ...optionalParams: any[]) {
