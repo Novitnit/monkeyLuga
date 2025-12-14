@@ -13,6 +13,7 @@
     "@colyseus/playground": "^0.16.4",
     "@colyseus/schema": "^3.0.70",
     "@colyseus/ws-transport": "^0.16.5",
-    "@types/express": "^5.0.6"
+    "@types/express": "^5.0.6",
+    "colyseus": "^0.16.5"
   }
 }

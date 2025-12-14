@@ -4,6 +4,7 @@ import { monitor } from '@colyseus/monitor';
 import { playground } from '@colyseus/playground';
 import { Server } from '@colyseus/core';
 import { WebSocketTransport } from '@colyseus/ws-transport';
+import { GameRoom } from './room/GameRoom';
 
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 
@@ -16,6 +17,8 @@ const server = http.createServer(app);
 const gameServer = new Server({
   transport: new WebSocketTransport({ server })
 });
+
+gameServer.define("game",GameRoom)
 
 server.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}`);
