@@ -1,0 +1,26 @@
+{
+  "name": "@isgame/server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --pretty --noEmit",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@isgame/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "tsx": "^4.0.0",
+    "@types/node": "^20.11.30"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "engines": {
+    "node": ">=18"
+  }
+}
