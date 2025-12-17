@@ -42,7 +42,7 @@ function renderRoute(root: HTMLElement): void {
                 params[key] = match[i + 1];
             });
 
-            root.innerHTML = route.page.render(params);
+            route.page.render(root, params);
             return;
         }
     }

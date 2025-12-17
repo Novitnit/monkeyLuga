@@ -14,7 +14,7 @@ const DT = 1 / TICK_RATE;
 const SPEED = 200;
 const GRAVITY = 1200;
 const JUMP_FORCE = 500;
-const GROUND_Y = 0;
+const GROUND_Y = 600;
 
 export class GameRoom extends Room<GameState> {
 
