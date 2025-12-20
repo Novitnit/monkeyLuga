@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "pnpm -r --parallel dev",
     "build": "pnpm -r build",
+    "dev:client": "cd packages/client && pnpm dev",
+    "dev:server": "cd packages/server && pnpm dev",
+    "dev:shared": "cd packages/shared && pnpm dev",
     "typecheck": "pnpm -r typecheck"
   },
   "dependencies": {
@@ -17,5 +20,8 @@
     "colyseus": "^0.16.5",
     "colyseus.js": "^0.16.22",
     "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.27"
   }
 }

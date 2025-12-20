@@ -2,18 +2,24 @@
   "name": "@isgame/shared",
   "version": "0.1.0",
   "type": "module",
-
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./schema":{
+    "./schema": {
       "import": "./dist/schema/index.js",
       "types": "./dist/schema/index.d.ts"
+    },
+    "./maps": {
+      "import": "./dist/maps/index.js",
+      "types": "./dist/maps/index.d.ts"
+    },
+    "./question": {
+      "import": "./dist/question/index.js",
+      "types": "./dist/question/index.d.ts"
     }
   },
-
   "scripts": {
     "dev": "tsc -w -p tsconfig.json",
     "build": "tsc -p tsconfig.json",
@@ -24,5 +30,7 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"]
+  "files": [
+    "dist"
+  ]
 }

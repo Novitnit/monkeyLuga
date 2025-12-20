@@ -22,7 +22,8 @@
   "devDependencies": {
     "typescript": "^5.9.3",
     "tsx": "^4.0.0",
-    "@types/node": "^20.11.30"
+    "@types/node": "^20.11.30",
+    "@isgame/shared": "workspace:*"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

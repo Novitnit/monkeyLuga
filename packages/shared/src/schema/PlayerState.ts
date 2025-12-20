@@ -4,7 +4,15 @@ export class PlayerState extends Schema {
   @type("number") x = 0;
   @type("number") y = 0;
 
+  @type("number") w = 80;
+  @type("number") h = 128;
+
+  @type("number") prevY = 0;
+  @type("number") prevX = 0;
+
   @type("number") vy = 0;
   @type("number") vx = 0;
   @type("boolean") isGrounded = false;
+
+  @type("string") color = "#ffffff";
 }

@@ -35,6 +35,10 @@ importers:
       phaser:
         specifier: ^3.90.0
         version: 3.90.0
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.27
+        version: 20.19.27
 
   packages/client:
     dependencies:
