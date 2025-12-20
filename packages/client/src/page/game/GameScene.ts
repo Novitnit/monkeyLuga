@@ -34,7 +34,9 @@ export default class GameScene extends Phaser.Scene {
         if (data.room) {
             this.room = data.room;
         } else {
-            const client = new Client(`ws://${location.host}/api`);
+            const ip = "ws://server:3000";
+
+            const client = new Client(ip);
             this.room = await client.joinById<GameState>(data.roomId);
         }
 
