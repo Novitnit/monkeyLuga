@@ -9,6 +9,7 @@ import type { GameState } from "@isgame/shared";
 function getClient(): Client {
   const g = globalThis as any;
   const ip = import.meta.env.VITE_API_URL || `ws://localhost/api`;
+  console.log("Using API URL:", ip);
   if (!g.__colyClient) g.__colyClient = new Client(ip);
   return g.__colyClient as Client;
 }
