@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
-import { GameState } from "@isgame/shared/schema";
+import { GameState } from "@isgame/shared";
 import { map1 } from "@isgame/shared";
 
 function getClient(): Client {

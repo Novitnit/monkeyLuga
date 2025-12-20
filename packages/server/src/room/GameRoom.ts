@@ -1,6 +1,6 @@
 // server/src/rooms/GameRoom.ts
 import { Room, Client } from "@colyseus/core";
-import { GameState, PlayerState, InteractBoxState } from "@isgame/shared/schema";
+import { GameState, PlayerState, InteractBoxState } from "@isgame/shared";
 import { map1, InputState } from "@isgame/shared";
 import { aabb, RectLike } from "../utils/collision";
 import {

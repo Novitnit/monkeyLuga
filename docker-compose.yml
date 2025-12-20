@@ -5,8 +5,6 @@ services:
       dockerfile: packages/server/Dockerfile
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
 
   client:
     build:

@@ -22,7 +22,7 @@
   },
   "scripts": {
     "dev": "tsc -w -p tsconfig.json",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsup",
     "typecheck": "tsc --pretty --noEmit"
   },
   "devDependencies": {
