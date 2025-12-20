@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import http from 'node:http';
 import { monitor } from '@colyseus/monitor';
 import { playground } from '@colyseus/playground';
@@ -9,6 +10,10 @@ import { GameRoom } from './room/GameRoom';
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
 
 const app = express();
+
+// Allow cross-origin requests from the deployed client
+// Adjust origin via CORS_ORIGIN if needed
+app.use(cors({ origin: process.env.CORS_ORIGIN || '*'}));
 
 app.use('/', playground())
 app.use('/colyseus', monitor());

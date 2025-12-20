@@ -19,9 +19,11 @@
     "@types/express": "^5.0.6",
     "colyseus": "^0.16.5",
     "colyseus.js": "^0.16.22",
+    "cors": "^2.8.5",
     "phaser": "^3.90.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/node": "^20.19.27",
     "tsup": "^8.5.1"
   }
