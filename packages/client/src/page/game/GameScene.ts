@@ -3,15 +3,6 @@ import { Client, getStateCallbacks, Room } from "colyseus.js";
 import { GameState } from "@isgame/shared";
 import { map1 } from "@isgame/shared";
 
-function getClient(): Client {
-    const g = globalThis as any;
-    const envUrl = (import.meta as any).env?.VITE_WS_URL as string | undefined;
-    const defaultUrl = `ws://${location.hostname}:3000`;
-    const wsUrl = envUrl || defaultUrl;
-    if (!g.__colyClient) g.__colyClient = new Client(wsUrl);
-    return g.__colyClient as Client;
-}
-
 export default class GameScene extends Phaser.Scene {
     private sendAccum = 0;
     private readonly SEND_HZ = 20;
@@ -43,7 +34,7 @@ export default class GameScene extends Phaser.Scene {
         if (data.room) {
             this.room = data.room;
         } else {
-            const client = getClient();
+            const client = new Client(`ws://${location.host}/api`);
             this.room = await client.joinById<GameState>(data.roomId);
         }
 

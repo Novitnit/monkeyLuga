@@ -3,7 +3,7 @@ import Phaser from "phaser";
 import GameScene from "./GameScene";
 import { navigateTo } from "../../routing";
 import { Client, Room } from "colyseus.js";
-import type { GameState } from "@isgame/shared/schema";
+import type { GameState } from "@isgame/shared";
 
 // ---- singleton client + cached room (ไม่ต้องสร้างไฟล์ใหม่) ----
 function getClient(): Client {
