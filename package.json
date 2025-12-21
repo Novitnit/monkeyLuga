@@ -8,6 +8,7 @@
     "dev:client": "cd packages/client && pnpm dev",
     "dev:server": "cd packages/server && pnpm dev",
     "dev:shared": "cd packages/shared && pnpm dev",
+    "start": "pnpm -r start",
     "typecheck": "pnpm -r typecheck"
   },
   "dependencies": {

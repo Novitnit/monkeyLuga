@@ -1,4 +1,4 @@
-import { PlayerState } from "@isgame/shared/schema";
+import { PlayerState } from "@isgame/shared";
 import { InputState, map1 } from "@isgame/shared";
 import { aabb, RectLike } from "../utils/collision";
 
