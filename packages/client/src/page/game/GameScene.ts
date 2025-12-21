@@ -11,6 +11,7 @@ import { TeleportZoneRenderer } from "./render/TeleportZoneRenderer";
 import { TbcZoneRenderer } from "./render/TbcZoneRenderer";
 import { TbcUI } from "./ui/TbcUI";
 import { navigateTo } from "../../routing";
+import { MobileControls } from "./ui/MobileControls";
 // import { navigateTo } from "../../routing"; // no auto-redirect on join failure
 
 export default class GameScene extends Phaser.Scene {
@@ -22,12 +23,15 @@ export default class GameScene extends Phaser.Scene {
     private players = new Map<string, Phaser.GameObjects.Rectangle>();
     private dot = new Map<string, Phaser.GameObjects.Rectangle>();
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+    private mobileControls?: MobileControls;
 
     private targets = new Map<string, { x: number; y: number }>();
     private questionUI?: QuestionUI;
     private myId!: string;
 
     private keyE!: Phaser.Input.Keyboard.Key;
+    private keyA!: Phaser.Input.Keyboard.Key;
+    private keyD!: Phaser.Input.Keyboard.Key;
 
     // private bg!: Phaser.GameObjects.TileSprite;
 
@@ -66,9 +70,14 @@ export default class GameScene extends Phaser.Scene {
         this.keyE = this.input.keyboard!.addKey(
             Phaser.Input.Keyboard.KeyCodes.E
         );
+        this.keyA = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        this.keyD = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 
         this.cursors = this.input.keyboard!.createCursorKeys();
         this.cameras.main.setBounds(510, 0, 5000, 705);
+
+        this.mobileControls = new MobileControls(this);
+        this.mobileControls.init();
 
         if (this.room.sessionId) {
             this.createBackground();
@@ -95,9 +104,17 @@ export default class GameScene extends Phaser.Scene {
             rect.y += (t.y - rect.y) * 0.2;
         }
 
-        const left = (this.cursors.left.isDown) ?? false;
-        const right = (this.cursors.right.isDown) ?? false;
-        const jump = (this.cursors.space?.isDown) ?? false;
+        const leftKb = (this.cursors.left.isDown || this.keyA.isDown) ?? false;
+        const rightKb = (this.cursors.right.isDown || this.keyD.isDown) ?? false;
+        const jumpKb = (this.cursors.space?.isDown) ?? false;
+        
+        const jumpTouch = this.mobileControls?.isJumpActive() ?? false;
+        const leftTouch = this.mobileControls?.left ?? false;
+        const rightTouch = this.mobileControls?.right ?? false;
+
+        const left = leftKb || leftTouch;
+        const right = rightKb || rightTouch;
+        const jump = jumpKb || jumpTouch;
 
         this.sendAccum += delta;
         const interval = 1000 / this.SEND_HZ;
@@ -108,7 +125,9 @@ export default class GameScene extends Phaser.Scene {
         // this.bg.tilePositionY = this.cameras.main.scrollY;
 
         this.room.send("input", { left, right, jump });
-        if (Phaser.Input.Keyboard.JustDown(this.keyE)) {
+    
+        const interactPress = Phaser.Input.Keyboard.JustDown(this.keyE) || (this.mobileControls?.consumeInteractPress() ?? false);
+        if (interactPress) {
             this.room.send("interact");
         }
     }
@@ -157,7 +176,7 @@ export default class GameScene extends Phaser.Scene {
                 const mainplatformY = 630;
 
                 // console.log(`rx:${player.x}, ry:${player.y} x:${player.x-mainplatformX}, y:${-(player.y-mainplatformY)}`);
-                console.log(`x:${player.x - mainplatformX}, y:${(-(player.y - mainplatformY)) - player.h / 2}`);
+                // console.log(`x:${player.x - mainplatformX}, y:${(-(player.y - mainplatformY)) - player.h / 2}`);
                 rect.setFillStyle(this.cssColorToNumber(player.color));
 
                 if (dt) {

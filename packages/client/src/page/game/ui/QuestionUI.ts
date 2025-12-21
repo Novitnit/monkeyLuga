@@ -32,6 +32,15 @@ export class QuestionUI {
 
   private build(data: ShowQuestionPayload) {
     const { width, height } = this.scene.scale;
+    const isTouch = (navigator.maxTouchPoints ?? 0) > 0;
+    const pad = isTouch ? 16 : 24;
+    const panelW = Math.min(width - pad * 2, isTouch ? 560 : 520);
+    const panelH = Math.min(height - pad * 2, isTouch ? 420 : 360);
+    const questionFont = isTouch ? "22px" : "20px";
+    const buttonH = isTouch ? 56 : 44;
+    const buttonFont = isTouch ? "20px" : "18px";
+    const spacingY = isTouch ? 72 : 60;
+    const wrapW = panelW - 40;
 
     const bg = this.scene.add.rectangle(
       width / 2,
@@ -45,20 +54,20 @@ export class QuestionUI {
     const panel = this.scene.add.rectangle(
       width / 2,
       height / 2,
-      520,
-      360,
+      panelW,
+      panelH,
       0xffffff,
       1
     ).setStrokeStyle(2, 0x000000);
 
     const questionText = this.scene.add.text(
       width / 2,
-      height / 2 - 120,
+      height / 2 - (panelH / 2) + 40,
       data.question,
       {
-        fontSize: "20px",
+        fontSize: questionFont,
         color: "#000",
-        wordWrap: { width: 480 }
+        wordWrap: { width: wrapW }
       }
     ).setOrigin(0.5);
 
@@ -68,13 +77,14 @@ export class QuestionUI {
 
     const buttons: Phaser.GameObjects.GameObject[] = [];
     choiceArray.forEach((choice, index) => {
-      const y = height / 2 - 40 + index * 60;
+      const btnW = Math.max(260, Math.min(panelW - 80, 420));
+      const y = height / 2 - (panelH / 2) + 120 + index * spacingY;
 
       const btnBg = this.scene.add.rectangle(
         width / 2,
         y,
-        420,
-        44,
+        btnW,
+        buttonH,
         0xdddddd
       ).setInteractive();
 
@@ -83,8 +93,9 @@ export class QuestionUI {
         y,
         choice.text as string,
         {
-          fontSize: "18px",
-          color: "#000"
+          fontSize: buttonFont,
+          color: "#000",
+          wordWrap: { width: btnW - 24 }
         }
       ).setOrigin(0.5);
 
