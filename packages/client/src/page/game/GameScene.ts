@@ -2,6 +2,10 @@ import Phaser from "phaser";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
 import { GameState } from "@isgame/shared";
 import { map1 } from "@isgame/shared";
+import { QuestionUI } from "./ui/QuestionUI";
+import { InteractRenderer } from "./render/InteractRenderer";
+import { DoorRenderer } from "./render/DoorRenderer";
+import { JumpZoneRenderer } from "./render/JumpZoneRenderer";
 
 export default class GameScene extends Phaser.Scene {
     private sendAccum = 0;
@@ -14,7 +18,7 @@ export default class GameScene extends Phaser.Scene {
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
 
     private targets = new Map<string, { x: number; y: number }>();
-    private questionUI?: Phaser.GameObjects.Container;
+    private questionUI?: QuestionUI;
     private myId!: string;
 
     private keyE!: Phaser.Input.Keyboard.Key;
@@ -35,7 +39,7 @@ export default class GameScene extends Phaser.Scene {
             this.room = data.room;
         } else {
 
-            const ip = import.meta.env.VITE_API_URL || `ws://localhost/api`;
+            const ip = import.meta.env.VITE_API_URL || `ws://localhost:3000/api`;
 
             const client = new Client(ip);
             this.room = await client.joinById<GameState>(data.roomId);
@@ -53,12 +57,12 @@ export default class GameScene extends Phaser.Scene {
         this.cameras.main.setBounds(510, 0, 5000, 705);
         this.createBackground();
         this.setupRender();
-        this.setupQuestionUI();
+        this.setupUI();
+        this.setupMapDecor();
     }
 
     update(_time: number, delta: number): void {
         if (!this.room) return;
-
 
         for (const [id, rect] of this.players) {
             const t = this.targets.get(id);
@@ -87,107 +91,22 @@ export default class GameScene extends Phaser.Scene {
     }
 
     private createBackground() {
-        // this.bg = this.add.tileSprite(0, 0, this.scale.width, this.scale.height, "bg").setOrigin(0, 0).setScrollFactor(0);
 
-        // this.bg.setTileScale(4, 4);
-        // this.bg.setDepth(-1);
     }
 
-    private setupQuestionUI() {
-        this.room.onMessage("question_show", data => {
-            if (this.questionUI) return;
-            const { width, height } = this.scale;
-            const bg = this.add.rectangle(
-                width / 2,
-                height / 2,
-                width,
-                height,
-                0x000000,
-                0.6
-            ).setDepth(200);
-
-            const panel = this.add.rectangle(
-                width / 2,
-                height / 2,
-                520,
-                360,
-                0xffffff,
-                1
-            ).setStrokeStyle(2, 0x000000).setDepth(201);
-
-            const questionText = this.add.text(
-                width / 2,
-                height / 2 - 120,
-                data.question,
-                {
-                    fontSize: "20px",
-                    color: "#000",
-                    wordWrap: { width: 480 }
-                }
-            ).setOrigin(0.5).setDepth(201)
-
-            const choiceArray = Object.entries(data.choices).map(
-                ([id, text]) => ({ id, text })
-            );
-
-            const shuffledChoices = this.shuffle(choiceArray);
-            const buttons: Phaser.GameObjects.GameObject[] = [];
-            shuffledChoices.forEach((choice, index) => {
-                const y = height / 2 - 40 + index * 60;
-
-                const btnBg = this.add.rectangle(
-                    width / 2,
-                    y,
-                    420,
-                    44,
-                    0xdddddd
-                ).setInteractive().setDepth(201);
-
-                const btnText = this.add.text(
-                    width / 2,
-                    y,
-                    choice.text as string,
-                    {
-                        fontSize: "18px",
-                        color: "#000"
-                    }
-                ).setOrigin(0.5).setDepth(999);
-
-                btnBg.on("pointerdown", () => {
-                    console.log(data)
-                    this.selectAnswer(data.qid, choice.id);
-                });
-
-                // btnText.on("pointerover", () => { console.log("hover") });
-
-                buttons.push(btnBg, btnText);
-            })
-            this.questionUI = this.add.container(0, 0, [
-                bg,
-                panel,
-                questionText,
-                ...buttons
-            ]);
-
-            [bg, panel, questionText, ...buttons].forEach(obj =>
-                (obj as any).setScrollFactor(0)
-            );
-        })
-
-        this.room.onMessage("question_result", data => {
-            console.log("Answer result:", data);
-            this.closeQuestionUI();
-            if (!data.isCorrect) {
-                this.room.send("getNewQuestion");
-            }
-        });
+    private setupUI() {
+        this.questionUI = new QuestionUI(this, this.room);
+        this.questionUI.init();
+        const interactRenderer = new InteractRenderer(this, this.room);
+        interactRenderer.init();
+        const doorRenderer = new DoorRenderer(this, this.room);
+        doorRenderer.init();
     }
 
     private setupRender() {
         const $ = getStateCallbacks(this.room);
 
         $(this.room.state).players.onAdd((player, id) => {
-            // const rect = this.add.image(player.x, player.y, 'player');
             const rect = this.add.rectangle(
                 player.x,
                 player.y,
@@ -208,8 +127,7 @@ export default class GameScene extends Phaser.Scene {
                 if (!t) return;
                 t.x = player.x;
                 t.y = player.y;
-
-                // keep color synced if it changes
+                console.log(`x:${player.x}, y:${player.y}`);
                 rect.setFillStyle(this.cssColorToNumber(player.color));
 
                 if (dt) {
@@ -221,29 +139,6 @@ export default class GameScene extends Phaser.Scene {
             if (id === this.myId) {
                 this.cameras.main.startFollow(rect, false);
             }
-            const interactRects = new Map<string, Phaser.GameObjects.Rectangle>();
-            $(this.room.state).interactBoxes.onAdd((box, id) => {
-                const r = this.add.rectangle(
-                    box.x + box.w / 2,
-                    box.y + box.h / 2,
-                    box.w,
-                    box.h,
-                    0x00ff00,
-                    0.3
-                ).setDepth(100);
-                interactRects.set(id, r);
-
-                this.room.onMessage("interact_fx", data => {
-                    const r = interactRects.get(data.boxId);
-                    if (!r) return;
-
-                    r.setFillStyle(0x00ff00, 0.6);
-
-                    this.time.delayedCall(200, () => {
-                        r.setFillStyle(0x00ff00, 0.3);
-                    });
-                });
-            });
         });
 
         map1.platforms.forEach(p => {
@@ -272,18 +167,20 @@ export default class GameScene extends Phaser.Scene {
         return a as T[];
     }
 
-    private selectAnswer(questionId: string, answerId: string) {
-        // console.log("Selected answer:", questionId, answerId);
-        this.room.send("answer_question", {
-            questionId,
-            answerId
-        });
-    }
+    private setupMapDecor() {
+        map1.platforms.forEach(p => {
+            this.add.rectangle(
+                p.x + p.w / 2,
+                p.y + p.h / 2,
+                p.w,
+                p.h,
+                0x888888
+            ).setDepth(10)
+        })
 
-    private closeQuestionUI() {
-        if (!this.questionUI) return;
-        this.questionUI.destroy(true);
-        this.questionUI = undefined;
+        // visualize high jump zones
+        const jumpZones = new JumpZoneRenderer(this);
+        jumpZones.init();
     }
 
     // Utility: convert CSS color string (#hex or hsl(...)) to Phaser number

@@ -1,5 +1,8 @@
 services:
   server:
+    environment:
+      # - VITE_API_URL=http://13.239.22.119:3000/api
+      - VITE_API_URL=http://localhost:3000/api
     build:
       context: .
       dockerfile: packages/server/Dockerfile

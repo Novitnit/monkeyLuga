@@ -6,4 +6,3 @@ Dockerfile*
 **/.DS_Store
 **/npm-debug.log
 **/pnpm-debug.log
-**/.env*

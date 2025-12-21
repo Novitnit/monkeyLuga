@@ -7,4 +7,6 @@ export class InteractBoxState extends Schema {
   @type("number") y!: number;
   @type("number") w!: number;
   @type("number") h!: number;
+  // optional: id ของประตูที่จะเปิดเมื่อ "ตอบถูก"
+  @type("string") opensDoorId?: string;
 }

@@ -1,16 +1,15 @@
 import { PlayerState } from "@isgame/shared/schema";
-import { InputState } from "@isgame/shared";
+import { InputState, map1 } from "@isgame/shared";
 import { aabb, RectLike } from "../utils/collision";
 
-export const SPEED = 150;
 export const GRAVITY = 1200;
 export const JUMP_FORCE = 500;
 
 export function applyHorizontalInput(player: PlayerState, input?: InputState) {
   if (input?.left) {
-    player.vx = -SPEED;
+    player.vx = -player.speed;
   } else if (input?.right) {
-    player.vx = SPEED;
+    player.vx = player.speed;
   } else {
     player.vx = 0;
   }
@@ -22,7 +21,17 @@ export function applyJump(
   wasGrounded: boolean
 ) {
   if (input?.jump && wasGrounded) {
-    player.vy = -JUMP_FORCE;
+    let jumpForce = JUMP_FORCE;
+    const zones = map1.highJumpZones || [];
+    for (const z of zones) {
+      // ใช้ multiplier ถ้าตั้งค่าไว้ ไม่งั้นดีฟอลต์ 1.5
+      if (aabb(player, z as unknown as RectLike)) {
+        const mult = z.multiplier ?? 1.5;
+        jumpForce = Math.max(jumpForce, JUMP_FORCE * mult);
+        break;
+      }
+    }
+    player.vy = -jumpForce;
     player.isGrounded = false;
   }
 }

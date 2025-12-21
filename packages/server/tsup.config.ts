@@ -9,6 +9,5 @@ export default defineConfig({
   clean: true,
   dts: true,
   splitting: false,
-
-  external: [] 
+  external: [],
 });

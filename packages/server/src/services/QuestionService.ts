@@ -9,10 +9,10 @@ export type MathQuestion = {
 };
 
 export class QuestionService {
-  private questions: MathQuestion[] = [];
+  private questions: MathQuestion[];
 
-  constructor(jsonPath: string) {
-    this.questions = this.loadQuestions(jsonPath);
+  constructor(questions: MathQuestion[]) {
+    this.questions = questions;
   }
 
   getRandomQuestion(): MathQuestion {
@@ -20,24 +20,8 @@ export class QuestionService {
   }
 
   validateAnswer(questionId: string, answerId: string): boolean {
-    const q = this.questions.find((q) => q.id === questionId);
+    const q = this.questions.find(q => q.id === questionId);
     if (!q) return false;
-    if (!q.answer[answerId]) return false;
     return q.correctAnswerId === answerId;
-  }
-
-  private loadQuestions(jsonPath: string): MathQuestion[] {
-    try {
-      const filePath = path.resolve(process.cwd(), jsonPath);
-      const raw = fs.readFileSync(filePath, "utf-8");
-      const data = JSON.parse(raw) as MathQuestion[];
-      if (!Array.isArray(data)) return [];
-      return data.filter(
-        (q) => q && q.id && q.question && q.answer && q.correctAnswerId
-      );
-    } catch (e) {
-      console.error("Failed to load questions:", e);
-      return [];
-    }
   }
 }
