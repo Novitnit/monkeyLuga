@@ -31,11 +31,11 @@ export const map1:mapData = {
         // {targetX}
     ],
     playerSpawns:
-    // createPlayerSpawn(50,0)
+    createPlayerSpawn(50,0)
     // createPlayerSpawn(695, 65)
     // createPlayerSpawn(915, 365)
     // createPlayerSpawn(1320, 463)
-    createPlayerSpawn(2142.5, 103)
+    // createPlayerSpawn(2142.5, 103)
     ,
     interactBoxes:[
         createInteractBox("btn1", 110, 50, 32, 32, "door1"),

@@ -2,6 +2,10 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 RUN corepack enable
+
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 COPY . .
 RUN pnpm install --frozen-lockfile
 # Build all workspace packages to ensure @isgame/shared is compiled

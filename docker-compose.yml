@@ -1,8 +1,5 @@
 services:
   server:
-    environment:
-      # - VITE_API_URL=http://13.239.22.119:3000/api
-      - VITE_API_URL=http://localhost:3000/api
     build:
       context: .
       dockerfile: packages/server/Dockerfile
@@ -13,6 +10,8 @@ services:
     build:
       context: .
       dockerfile: packages/client/Dockerfile
+      args:
+        VITE_API_URL: ws://13.239.22.119:3000
     ports:
       - "80:80"
     depends_on:
