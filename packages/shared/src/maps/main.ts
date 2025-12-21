@@ -1,4 +1,4 @@
-type Platform = {
+export type Platform = {
   x: number;
   y: number;
   w: number;
@@ -35,6 +35,9 @@ export type mapData = {
     interactBoxes?: InteractBox[];
   doors?: Door[];
   highJumpZones?: HighJumpZone[];
+  killZones?: KillZone[];
+  teleportZones?: TeleportZone[];
+  tbcZones?: ToBeContinuedZone[];
 }
 
 type Door = {
@@ -52,4 +55,27 @@ type HighJumpZone = {
   h: number;
   // คูณแรงกระโดดเมื่ออยู่ในโซนนี้ (เช่น 1.5 = กระโดดสูงขึ้น 50%)
   multiplier?: number;
+};
+
+type KillZone = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+};
+
+export type TeleportZone = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  targetX: number;
+  targetY: number;
+};
+
+export type ToBeContinuedZone = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 };

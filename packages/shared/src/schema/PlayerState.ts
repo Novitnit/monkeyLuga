@@ -14,7 +14,7 @@ export class PlayerState extends Schema {
   @type("number") vx = 0;
   @type("boolean") isGrounded = false;
 
-  @type("number") speed = 300;
+  @type("number") speed = 500;
 
   @type("string") color = "#ffffff";
 }

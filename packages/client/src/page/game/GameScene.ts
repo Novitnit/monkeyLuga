@@ -6,6 +6,12 @@ import { QuestionUI } from "./ui/QuestionUI";
 import { InteractRenderer } from "./render/InteractRenderer";
 import { DoorRenderer } from "./render/DoorRenderer";
 import { JumpZoneRenderer } from "./render/JumpZoneRenderer";
+import { KillZoneRenderer } from "./render/KillZoneRenderer";
+import { TeleportZoneRenderer } from "./render/TeleportZoneRenderer";
+import { TbcZoneRenderer } from "./render/TbcZoneRenderer";
+import { TbcUI } from "./ui/TbcUI";
+import { navigateTo } from "../../routing";
+// import { navigateTo } from "../../routing"; // no auto-redirect on join failure
 
 export default class GameScene extends Phaser.Scene {
     private sendAccum = 0;
@@ -38,11 +44,19 @@ export default class GameScene extends Phaser.Scene {
         if (data.room) {
             this.room = data.room;
         } else {
-
-            const ip = import.meta.env.VITE_API_URL || `ws://localhost:3000/api`;
-
+            const ip = import.meta.env.VITE_API_URL || `ws://localhost:3000`;
             const client = new Client(ip);
-            this.room = await client.joinById<GameState>(data.roomId);
+            try {
+                this.room = await client.joinById<GameState>(data.roomId);
+            } catch (err) {
+                console.error("Failed to join room:", err);
+                this.room?.leave();
+                this.scene.stop();
+                this.scene.remove();
+                this.game?.destroy(true);
+                navigateTo("/game");
+                return;
+            }
         }
 
         this.myId = this.room.sessionId;
@@ -55,10 +69,19 @@ export default class GameScene extends Phaser.Scene {
 
         this.cursors = this.input.keyboard!.createCursorKeys();
         this.cameras.main.setBounds(510, 0, 5000, 705);
-        this.createBackground();
-        this.setupRender();
-        this.setupUI();
-        this.setupMapDecor();
+
+        if (this.room.sessionId) {
+            this.createBackground();
+            this.setupRender();
+            this.setupUI();
+            this.setupMapDecor();
+        }
+
+        this.room.onLeave(() => {
+            this.room.leave();
+            this.scene.stop();
+            navigateTo("/");
+        })
     }
 
     update(_time: number, delta: number): void {
@@ -97,6 +120,8 @@ export default class GameScene extends Phaser.Scene {
     private setupUI() {
         this.questionUI = new QuestionUI(this, this.room);
         this.questionUI.init();
+        const tbcUI = new TbcUI(this, this.room);
+        tbcUI.init();
         const interactRenderer = new InteractRenderer(this, this.room);
         interactRenderer.init();
         const doorRenderer = new DoorRenderer(this, this.room);
@@ -127,7 +152,12 @@ export default class GameScene extends Phaser.Scene {
                 if (!t) return;
                 t.x = player.x;
                 t.y = player.y;
-                console.log(`x:${player.x}, y:${player.y}`);
+
+                const mainplatformX = 500;
+                const mainplatformY = 630;
+
+                // console.log(`rx:${player.x}, ry:${player.y} x:${player.x-mainplatformX}, y:${-(player.y-mainplatformY)}`);
+                console.log(`x:${player.x - mainplatformX}, y:${(-(player.y - mainplatformY)) - player.h / 2}`);
                 rect.setFillStyle(this.cssColorToNumber(player.color));
 
                 if (dt) {
@@ -181,6 +211,18 @@ export default class GameScene extends Phaser.Scene {
         // visualize high jump zones
         const jumpZones = new JumpZoneRenderer(this);
         jumpZones.init();
+
+        // visualize kill zones
+        const killZones = new KillZoneRenderer(this);
+        killZones.init();
+
+        // visualize teleport zones
+        const tpZones = new TeleportZoneRenderer(this);
+        tpZones.init();
+
+        // visualize To-Be-Continued zones
+        const tbcZones = new TbcZoneRenderer(this);
+        tbcZones.init();
     }
 
     // Utility: convert CSS color string (#hex or hsl(...)) to Phaser number

@@ -12,11 +12,7 @@ import {
 } from "./Physics";
 import { QuestionService, MathQuestion } from "../services/QuestionService";
 import { m5Questions } from "../question/m5";
-
-const TICK_RATE = 20;
-const DT = 1 / TICK_RATE;
-const QUESTION_DELAY_MS = 2000;
-const DEATH_Y = 700;
+import { TICK_RATE, DT, QUESTION_DELAY_MS, DEATH_Y } from "./RoomConfig";
 export class GameRoom extends Room<GameState> {
 
   private inputs = new Map<string, InputState>();
@@ -25,6 +21,8 @@ export class GameRoom extends Room<GameState> {
   private pendingQuestionFor = new Set<string>();
   private frozenUntil = new Map<string, number>();
   private openDoorsByPlayer = new Map<string, Set<string>>();
+  private tbcShown = new Set<string>();
+  private hardFrozen = new Set<string>();
   private colorPalette = [
     "#e53935", // red
     "#1e88e5", // blue
@@ -39,9 +37,16 @@ export class GameRoom extends Room<GameState> {
 
   onCreate() {
     this.state = new GameState();
-
     this.questionService = new QuestionService(m5Questions);
+    this.initMap();
+    this.registerMessageHandlers();
 
+    this.setSimulationInterval(() => {
+      this.updatePlayers();
+    }, 1000 / TICK_RATE);
+  }
+
+  private initMap() {
     if (map1.interactBoxes) {
       for (const box of map1.interactBoxes) {
         const b = new InteractBoxState();
@@ -50,24 +55,26 @@ export class GameRoom extends Room<GameState> {
         b.y = box.y;
         b.w = box.w;
         b.h = box.h;
-          if (box.opensDoorId) b.opensDoorId = box.opensDoorId;
+        if (box.opensDoorId) b.opensDoorId = box.opensDoorId;
         this.state.interactBoxes.set(b.id, b);
       }
     }
 
-      if (map1.doors) {
-        for (const d of map1.doors) {
-          const door = new DoorState();
-          door.id = d.id;
-          door.x = d.x;
-          door.y = d.y;
-          door.w = d.w;
-          door.h = d.h;
-          door.open = false;
-          this.state.doors.set(door.id, door);
-        }
+    if (map1.doors) {
+      for (const d of map1.doors) {
+        const door = new DoorState();
+        door.id = d.id;
+        door.x = d.x;
+        door.y = d.y;
+        door.w = d.w;
+        door.h = d.h;
+        door.open = false;
+        this.state.doors.set(door.id, door);
       }
+    }
+  }
 
+  private registerMessageHandlers() {
     this.onMessage("input", (client, input) => {
       if (this.isFrozen(client.sessionId)) return;
       this.inputs.set(client.sessionId, input);
@@ -81,33 +88,29 @@ export class GameRoom extends Room<GameState> {
     this.onMessage("answer_question", (client, data) => {
       if (this.isFrozen(client.sessionId)) return;
       const { questionId, answerId } = data;
-
       const active = this.activeQuestionByPlayer.get(client.sessionId);
       if (!active) return;
-
       if (active.qid !== questionId) return;
-
       const isCorrect = this.questionService.validateAnswer(questionId, answerId);
-
       if (isCorrect) {
         this.activeQuestionByPlayer.delete(client.sessionId);
         const info = this.state.interactBoxes.get(active.boxId);
         if (info?.opensDoorId) {
-          const set = this.openDoorsByPlayer.get(client.sessionId) || new Set<string>();
-          set.add(info.opensDoorId);
-          this.openDoorsByPlayer.set(client.sessionId, set);
-          client.send("door_update", { doorId: info.opensDoorId, open: true });
+          this.openDoorForPlayer(client.sessionId, info.opensDoorId);
         }
       } else {
         this.scheduleQuestionAfterDelay(client, active.boxId);
       }
-
       client.send("question_result", { isCorrect });
     });
+  }
 
-    this.setSimulationInterval(() => {
-      this.updatePlayers();
-    }, 1000 / TICK_RATE);
+  private openDoorForPlayer(sessionId: string, doorId: string) {
+    const set = this.openDoorsByPlayer.get(sessionId) || new Set<string>();
+    set.add(doorId);
+    this.openDoorsByPlayer.set(sessionId, set);
+    const client = this.clients.find(c => c.sessionId === sessionId);
+    if (client) client.send("door_update", { doorId, open: true });
   }
 
   private handleInteract(sessionId: string) {
@@ -167,6 +170,8 @@ export class GameRoom extends Room<GameState> {
     this.inputs.delete(client.sessionId);
     this.activeQuestionByPlayer.delete(client.sessionId);
     this.openDoorsByPlayer.delete(client.sessionId);
+    this.tbcShown.delete(client.sessionId);
+    this.hardFrozen.delete(client.sessionId);
     console.log(`${client.sessionId} left! room id: ${this.roomId}`);
   }
 
@@ -193,6 +198,13 @@ export class GameRoom extends Room<GameState> {
 
   private updatePlayers() {
     this.state.players.forEach((player, id) => {
+      if (this.hardFrozen.has(id)) {
+        // keep player static while hard-frozen
+        player.vx = 0;
+        player.vy = 0;
+        this.inputs.delete(id);
+        return;
+      }
       const input = this.isFrozen(id) ? undefined : this.inputs.get(id);
       this.updatePlayer(player, input, id);
       this.inputs.delete(id); // clear input after processing
@@ -209,34 +221,76 @@ export class GameRoom extends Room<GameState> {
     applyJump(player, input, wasGrounded);
     applyGravity(player, DT);
     integrate(player, DT);
-    // รวมแพลตฟอร์มกับประตูที่ยังไม่เปิด เพื่อทำให้ชนได้
-    const staticPlatforms = map1.platforms as unknown as RectLike[];
-    const closedDoors: RectLike[] = [];
-    const opened = this.openDoorsByPlayer.get(playerId) || new Set<string>();
-    this.state.doors.forEach(d => {
-      if (!opened.has(d.id)) {
-        closedDoors.push({ x: d.x, y: d.y, w: d.w, h: d.h } as RectLike);
-      }
-    });
-    resolvePlatformCollisions(player, [...staticPlatforms, ...closedDoors]);
+    const closedDoors = this.getClosedDoorRects(playerId);
+    resolvePlatformCollisions(player, [...(map1.platforms as unknown as RectLike[]), ...closedDoors]);
 
-    // ตรวจเช็คการตาย/ตกจากฉาก
+    // ชน KillZones แล้วตายทันที
+    const kills = map1.killZones || [];
+    for (const z of kills) {
+      // console.log(z)
+      if (aabb(player, z as unknown as RectLike)) {
+        this.respawnPlayer(playerId);
+        return;
+      }
+    }
+
+    // ชน TeleportZones แล้ววาร์ปไปตำแหน่งที่กำหนด
+    const tps = map1.teleportZones || [];
+    for (const z of tps) {
+      // console.log(z)
+      if (aabb(player, z as unknown as RectLike)) {
+        player.x = z.targetX;
+        player.y = z.targetY;
+        player.vx = 0;
+        player.vy = 0;
+        player.isGrounded = false;
+        // once teleported, stop further checks this tick
+        return;
+      }
+    }
+
+    // TBC zones: show overlay once per player
+    const tbcZones = map1.tbcZones || [];
+    if (tbcZones.length > 0 && !this.tbcShown.has(playerId)) {
+      for (const z of tbcZones) {
+        if (aabb(player, z as unknown as RectLike)) {
+          const client = this.clients.find(c => c.sessionId === playerId);
+          if (client) client.send("tbc_show");
+          this.tbcShown.add(playerId);
+          // freeze player permanently until they leave
+          this.hardFrozen.add(playerId);
+          player.vx = 0;
+          player.vy = 0;
+          break;
+        }
+      }
+    }
+
     if (player.y > DEATH_Y) {
       this.respawnPlayer(playerId);
     }
   }
 
+  private getClosedDoorRects(playerId: string): RectLike[] {
+    const rects: RectLike[] = [];
+    const opened = this.openDoorsByPlayer.get(playerId) || new Set<string>();
+    this.state.doors.forEach(d => {
+      if (!opened.has(d.id)) {
+        rects.push({ x: d.x, y: d.y, w: d.w, h: d.h } as RectLike);
+      }
+    });
+    return rects;
+  }
+
   private respawnPlayer(playerId: string) {
     const player = this.state.players.get(playerId);
     if (!player) return;
-    // ย้ายกลับจุดเริ่มต้นและรีเซ็ตความเร็ว
     player.x = map1.playerSpawns.x;
     player.y = map1.playerSpawns.y;
     player.vx = 0;
     player.vy = 0;
     player.isGrounded = false;
 
-    // ปิดประตูทั้งหมดสำหรับผู้เล่นนี้ (รีเซ็ตสถานะเฉพาะผู้เล่น)
     const opened = this.openDoorsByPlayer.get(playerId);
     if (opened && opened.size > 0) {
       const client = this.clients.find(c => c.sessionId === playerId);
@@ -253,6 +307,7 @@ export class GameRoom extends Room<GameState> {
   }
 
   private isFrozen(sessionId: string): boolean {
+    if (this.hardFrozen.has(sessionId)) return true;
     const until = this.frozenUntil.get(sessionId) || 0;
     if (Date.now() < until) return true;
     if (until) this.frozenUntil.delete(sessionId);

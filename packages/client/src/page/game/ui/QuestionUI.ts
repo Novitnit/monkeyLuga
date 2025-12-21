@@ -40,7 +40,7 @@ export class QuestionUI {
       height,
       0x000000,
       0.6
-    ).setDepth(200);
+    );
 
     const panel = this.scene.add.rectangle(
       width / 2,
@@ -49,7 +49,7 @@ export class QuestionUI {
       360,
       0xffffff,
       1
-    ).setStrokeStyle(2, 0x000000).setDepth(201);
+    ).setStrokeStyle(2, 0x000000);
 
     const questionText = this.scene.add.text(
       width / 2,
@@ -60,7 +60,7 @@ export class QuestionUI {
         color: "#000",
         wordWrap: { width: 480 }
       }
-    ).setOrigin(0.5).setDepth(201);
+    ).setOrigin(0.5);
 
     const choiceArray = Object.entries(data.choices).map(
       ([id, text]) => ({ id, text })
@@ -76,7 +76,7 @@ export class QuestionUI {
         420,
         44,
         0xdddddd
-      ).setInteractive().setDepth(201);
+      ).setInteractive();
 
       const btnText = this.scene.add.text(
         width / 2,
@@ -86,7 +86,7 @@ export class QuestionUI {
           fontSize: "18px",
           color: "#000"
         }
-      ).setOrigin(0.5).setDepth(999);
+      ).setOrigin(0.5);
 
       btnBg.on("pointerdown", () => {
         this.room.send("answer_question", {
