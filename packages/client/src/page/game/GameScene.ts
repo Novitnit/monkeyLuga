@@ -41,7 +41,7 @@ export default class GameScene extends Phaser.Scene {
 
     preload() {
         this.load.image("player", "/assets/player.png");
-        this.load.image("bg", "/assets/Background6.png");
+        this.load.image("bg", "/assets/Background.jpg");
     }
 
     async create(data: { roomId: string; room?: Room<GameState> }) {
@@ -133,7 +133,16 @@ export default class GameScene extends Phaser.Scene {
     }
 
     private createBackground() {
-
+        this.bg = this.add.tileSprite(
+            this.cameras.main.width / 2,
+            this.cameras.main.height / 2,
+            this.cameras.main.width,
+            this.cameras.main.height,
+            "bg"
+        );
+        this.bg.scale = 3.2
+        this.bg.y = this.cameras.main.height/3
+        this.bg.setScrollFactor(0);
     }
 
     private setupUI() {
@@ -165,9 +174,9 @@ export default class GameScene extends Phaser.Scene {
             );
             rect.setScale(2)
             console.log(rect.height, rect.width);
-            const dot = this.add.rectangle(player.x, player.y, 5, 5, 0xff0000);
+            // const dot = this.add.rectangle(player.x, player.y, 5, 5, 0xff0000);
             this.players.set(id, rect);
-            this.dot.set(id + "_dot", dot);
+            // this.dot.set(id + "_dot", dot);
             this.targets.set(id, { x: player.x, y: player.y });
 
             $(player).onChange(() => {

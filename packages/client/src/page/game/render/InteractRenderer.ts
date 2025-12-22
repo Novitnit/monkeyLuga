@@ -22,7 +22,7 @@ export class InteractRenderer {
         box.w,
         box.h,
         0x00ff00,
-        0.3
+        1
       ).setDepth(100);
       this.rects.set(id, r);
     });

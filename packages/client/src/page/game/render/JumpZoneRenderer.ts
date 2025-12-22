@@ -16,9 +16,9 @@ export class JumpZoneRenderer {
         z.y + z.h / 2,
         z.w,
         z.h,
-        0x33ccff,
-        0.25
-      ).setStrokeStyle(2, 0x33ccff).setDepth(20);
+        0xd7f542,
+        0.8
+      ).setStrokeStyle(2, 0xd7f542).setDepth(20);
     });
   }
 }

@@ -25,16 +25,16 @@ export const map1:mapData = {
         // { x:1210, y:465, w:200, h:100, multiplier:1.3 },
     ],
     teleportZones:[
-        createTeleportZone(1452.5+140, 83+165, 1320, 463 , 2092.5-1452.5-140),
+        createTeleportZone(1453+140, 83+165, 1320, 463 , 2092.5-1453-140),
         // createTeleportZone(1452.5+140, 1320, 463 ,83+165 , 700),
         // createTeleportZone(50,0, 50, 0 , 10, 10),
         // {targetX}
     ],
     playerSpawns:
-    createPlayerSpawn(50,0)
+    // createPlayerSpawn(50,0)
     // createPlayerSpawn(695, 65)
     // createPlayerSpawn(915, 365)
-    // createPlayerSpawn(1320, 463)
+    createPlayerSpawn(1320, 463)
     // createPlayerSpawn(2142.5, 103)
     ,
     interactBoxes:[

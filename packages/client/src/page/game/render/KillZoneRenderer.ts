@@ -14,7 +14,7 @@ export class KillZoneRenderer {
         z.w,
         z.h,
         0xff3333,
-        0.25
+        1
       ).setStrokeStyle(2, 0xff3333).setDepth(20);
     });
   }

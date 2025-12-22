@@ -14,7 +14,7 @@ export class TbcZoneRenderer {
         z.w,
         z.h,
         0x82f591,
-        0.25
+        0.8
       ).setStrokeStyle(2, 0x82f591).setDepth(20);
     });
   }
