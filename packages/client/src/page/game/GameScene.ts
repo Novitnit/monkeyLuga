@@ -19,8 +19,8 @@ export default class GameScene extends Phaser.Scene {
     private readonly SEND_HZ = 20;
 
     private room!: Room<GameState>;
-    // private players = new Map<string, Phaser.GameObjects.Image>();
-    private players = new Map<string, Phaser.GameObjects.Rectangle>();
+    private players = new Map<string, Phaser.GameObjects.Image>();
+    // private players = new Map<string, Phaser.GameObjects.Rectangle>();
     private dot = new Map<string, Phaser.GameObjects.Rectangle>();
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     private mobileControls?: MobileControls;
@@ -33,7 +33,7 @@ export default class GameScene extends Phaser.Scene {
     private keyA!: Phaser.Input.Keyboard.Key;
     private keyD!: Phaser.Input.Keyboard.Key;
 
-    // private bg!: Phaser.GameObjects.TileSprite;
+    private bg!: Phaser.GameObjects.TileSprite;
 
     constructor() {
         super("game");
@@ -41,7 +41,7 @@ export default class GameScene extends Phaser.Scene {
 
     preload() {
         this.load.image("player", "/assets/player.png");
-        // this.load.image("bg", "/assets/Background6.png");
+        this.load.image("bg", "/assets/Background6.png");
     }
 
     async create(data: { roomId: string; room?: Room<GameState> }) {
@@ -151,13 +151,18 @@ export default class GameScene extends Phaser.Scene {
         const $ = getStateCallbacks(this.room);
 
         $(this.room.state).players.onAdd((player, id) => {
-            const rect = this.add.rectangle(
+            // const rect = this.add.rectangle(
+            //     player.x,
+            //     player.y,
+            //     player.w / 2,
+            //     player.h / 2,
+            //     this.cssColorToNumber(player.color)
+            // )
+            const rect = this.add.image(
                 player.x,
                 player.y,
-                player.w / 2,
-                player.h / 2,
-                this.cssColorToNumber(player.color)
-            )
+                "player"
+            );
             rect.setScale(2)
             console.log(rect.height, rect.width);
             const dot = this.add.rectangle(player.x, player.y, 5, 5, 0xff0000);
@@ -177,7 +182,7 @@ export default class GameScene extends Phaser.Scene {
 
                 // console.log(`rx:${player.x}, ry:${player.y} x:${player.x-mainplatformX}, y:${-(player.y-mainplatformY)}`);
                 // console.log(`x:${player.x - mainplatformX}, y:${(-(player.y - mainplatformY)) - player.h / 2}`);
-                rect.setFillStyle(this.cssColorToNumber(player.color));
+                // rect.setFillStyle(this.cssColorToNumber(player.color));
 
                 if (dt) {
                     dt.x = player.x;

@@ -8,5 +8,6 @@ const root = document.getElementById('app')
 registerRoute('/', new Mainpage())
 registerRoute('/game', new GameMainPage())
 registerRoute('/game/:roomId', new GameMainPage())
+registerRoute('/game/', new GameMainPage())
 
 renderRoute(root!)

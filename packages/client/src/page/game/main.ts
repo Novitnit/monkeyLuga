@@ -63,6 +63,11 @@ export class GameMainPage extends Base {
       width: "100%",
       height: "100%",
       scene: [GameScene],
+      input:{
+        keyboard: true,
+        touch: true,
+        activePointers: 3,
+      },
       backgroundColor: "#2d2d2d",
     });
 

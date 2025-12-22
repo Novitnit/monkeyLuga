@@ -36,9 +36,10 @@ export class QuestionUI {
     const pad = isTouch ? 16 : 24;
     const panelW = Math.min(width - pad * 2, isTouch ? 560 : 520);
     const panelH = Math.min(height - pad * 2, isTouch ? 420 : 360);
-    const questionFont = isTouch ? "22px" : "20px";
+    // Adjust font sizes for mobile (touch) to improve fit
+    const questionFont = isTouch ? "18px" : "20px";
     const buttonH = isTouch ? 56 : 44;
-    const buttonFont = isTouch ? "20px" : "18px";
+    const buttonFont = isTouch ? "16px" : "18px";
     const spacingY = isTouch ? 72 : 60;
     const wrapW = panelW - 40;
 
