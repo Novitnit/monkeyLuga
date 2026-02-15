@@ -4,8 +4,8 @@ export class PlayerState extends Schema {
   @type("number") x = 0;
   @type("number") y = 0;
 
-  @type("number") w = 80;
-  @type("number") h = 128;
+  @type("number") w = 45;
+  @type("number") h = 50;
 
   @type("number") prevY = 0;
   @type("number") prevX = 0;
@@ -17,4 +17,6 @@ export class PlayerState extends Schema {
   @type("number") speed = 500;
 
   @type("string") color = "#ffffff";
+
+  @type("boolean") jumpBlocked = false;
 }

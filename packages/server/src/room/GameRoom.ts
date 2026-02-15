@@ -9,6 +9,10 @@ import {
   applyGravity,
   integrate,
   resolvePlatformCollisions,
+  isGroundedOnOtherHead,
+  resolvePlayerCollisions,
+  carryPlayersOnHead,
+  hitRectEdge,
 } from "./Physics";
 import { QuestionService, MathQuestion } from "../services/QuestionService";
 import { m5Questions } from "../question/m5";
@@ -214,15 +218,44 @@ export class GameRoom extends Room<GameState> {
   private updatePlayer(player: PlayerState, input: InputState | undefined, playerId: string) {
     player.prevY = player.y;
     player.prevX = player.x;
-    const wasGrounded = player.isGrounded;
+    let wasGrounded = player.isGrounded;
     player.isGrounded = false;
 
     applyHorizontalInput(player, input);
+    // Treat players standing on another player's head as grounded (can jump)
+    const others: PlayerState[] = [];
+    this.state.players.forEach((p, id) => { if (id !== playerId) others.push(p); });
+    if (!wasGrounded && isGroundedOnOtherHead(player, others)) {
+      wasGrounded = true;
+    }
     applyJump(player, input, wasGrounded);
     applyGravity(player, DT);
     integrate(player, DT);
     const closedDoors = this.getClosedDoorRects(playerId);
+
+    // Trigger question when crossing closed door boundary (pre-resolution)
+    const opened = this.openDoorsByPlayer.get(playerId) || new Set<string>();
+    this.state.doors.forEach(d => {
+      if (opened.has(d.id)) return;
+      const doorRect = { x: d.x, y: d.y, w: d.w, h: d.h } as RectLike;
+      if (hitRectEdge(player, doorRect)) {
+        let boxIdForDoor: string | undefined;
+        this.state.interactBoxes.forEach(b => {
+          if (b.opensDoorId === d.id && !boxIdForDoor) boxIdForDoor = b.id;
+        });
+        if (boxIdForDoor) {
+          this.onInteract(boxIdForDoor, playerId);
+        }
+      }
+    });
+
     resolvePlatformCollisions(player, [...(map1.platforms as unknown as RectLike[]), ...closedDoors]);
+    // Prevent players from passing through each other
+    resolvePlayerCollisions(player, others);
+    // Carry players standing on this player's head along with movement
+    carryPlayersOnHead(player, others);
+
+    // Door collision handled pre-resolution above
 
     // ชน KillZones แล้วตายทันที
     const kills = map1.killZones || [];

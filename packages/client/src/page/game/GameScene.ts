@@ -3,7 +3,7 @@ import { Client, getStateCallbacks, Room } from "colyseus.js";
 import { GameState } from "@isgame/shared";
 import { map1 } from "@isgame/shared";
 import { QuestionUI } from "./ui/QuestionUI";
-import { InteractRenderer } from "./render/InteractRenderer";
+// InteractRenderer disabled; door collision will trigger questions
 import { DoorRenderer } from "./render/DoorRenderer";
 import { JumpZoneRenderer } from "./render/JumpZoneRenderer";
 import { KillZoneRenderer } from "./render/KillZoneRenderer";
@@ -12,6 +12,8 @@ import { TbcZoneRenderer } from "./render/TbcZoneRenderer";
 import { TbcUI } from "./ui/TbcUI";
 import { navigateTo } from "../../routing";
 import { MobileControls } from "./ui/MobileControls";
+import { generateDinoTexture } from "./render/DinoTexture";
+import { BackgroundRenderer } from "./render/BackgroundRenderer";
 // import { navigateTo } from "../../routing"; // no auto-redirect on join failure
 
 export default class GameScene extends Phaser.Scene {
@@ -29,18 +31,19 @@ export default class GameScene extends Phaser.Scene {
     private questionUI?: QuestionUI;
     private myId!: string;
 
-    private keyE!: Phaser.Input.Keyboard.Key;
     private keyA!: Phaser.Input.Keyboard.Key;
     private keyD!: Phaser.Input.Keyboard.Key;
 
     private bg!: Phaser.GameObjects.TileSprite;
+    private platformColor: number = 0xb8956a; // default floor color
 
     constructor() {
         super("game");
     }
 
     preload() {
-        this.load.image("player", "/assets/player.png");
+        // Generate a pixel-art dino texture (smaller pixels)
+        generateDinoTexture(this, "player", { pixel: 3 });
         this.load.image("bg", "/assets/Background.jpg");
     }
 
@@ -67,9 +70,6 @@ export default class GameScene extends Phaser.Scene {
 
         console.log("Joined room:", data.roomId);
 
-        this.keyE = this.input.keyboard!.addKey(
-            Phaser.Input.Keyboard.KeyCodes.E
-        );
         this.keyA = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.keyD = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 
@@ -80,7 +80,8 @@ export default class GameScene extends Phaser.Scene {
         this.mobileControls.init();
 
         if (this.room.sessionId) {
-            this.createBackground();
+            // Parallax background
+            new BackgroundRenderer(this).init();
             this.setupRender();
             this.setupUI();
             this.setupMapDecor();
@@ -125,11 +126,7 @@ export default class GameScene extends Phaser.Scene {
         // this.bg.tilePositionY = this.cameras.main.scrollY;
 
         this.room.send("input", { left, right, jump });
-    
-        const interactPress = Phaser.Input.Keyboard.JustDown(this.keyE) || (this.mobileControls?.consumeInteractPress() ?? false);
-        if (interactPress) {
-            this.room.send("interact");
-        }
+        // No manual interact; rely on server-side door collision
     }
 
     private createBackground() {
@@ -145,13 +142,13 @@ export default class GameScene extends Phaser.Scene {
         this.bg.setScrollFactor(0);
     }
 
+
     private setupUI() {
         this.questionUI = new QuestionUI(this, this.room);
         this.questionUI.init();
         const tbcUI = new TbcUI(this, this.room);
         tbcUI.init();
-        const interactRenderer = new InteractRenderer(this, this.room);
-        interactRenderer.init();
+        // Interact prompt disabled; door collision triggers questions
         const doorRenderer = new DoorRenderer(this, this.room);
         doorRenderer.init();
     }
@@ -167,12 +164,13 @@ export default class GameScene extends Phaser.Scene {
             //     player.h / 2,
             //     this.cssColorToNumber(player.color)
             // )
-            const rect = this.add.image(
-                player.x,
-                player.y,
-                "player"
-            );
-            rect.setScale(2)
+            // Generate a per-player colored dino texture based on server-provided color
+            const colorNum = this.cssColorToNumber(player.color);
+            const texKey = `player_${id}`;
+            generateDinoTexture(this, texKey, { pixel: 3, baseColor: colorNum });
+            const rect = this.add.image(player.x, player.y, texKey);
+            // Smaller player scale
+            rect.setScale(1)
             console.log(rect.height, rect.width);
             // const dot = this.add.rectangle(player.x, player.y, 5, 5, 0xff0000);
             this.players.set(id, rect);
@@ -210,7 +208,7 @@ export default class GameScene extends Phaser.Scene {
                 p.y + p.h / 2,
                 p.w,
                 p.h,
-                0x888888
+                this.platformColor
             ).setDepth(10)
         })
 
@@ -218,6 +216,8 @@ export default class GameScene extends Phaser.Scene {
             const rect = this.players.get(id);
             rect?.destroy();
             this.players.delete(id);
+            const texKey = `player_${id}`;
+            if (this.textures.exists(texKey)) this.textures.remove(texKey);
         });
     }
 
@@ -237,7 +237,7 @@ export default class GameScene extends Phaser.Scene {
                 p.y + p.h / 2,
                 p.w,
                 p.h,
-                0x888888
+                this.platformColor
             ).setDepth(10)
         })
 

@@ -31,7 +31,7 @@ export const map1:mapData = {
         // {targetX}
     ],
     playerSpawns:
-    createPlayerSpawn(50,0)
+    createPlayerSpawn(50,200)
     // createPlayerSpawn(695, 65)
     // createPlayerSpawn(915, 365)
     // createPlayerSpawn(1320, 463)

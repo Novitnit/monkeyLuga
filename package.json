@@ -9,7 +9,10 @@
     "dev:server": "cd packages/server && pnpm dev",
     "dev:shared": "cd packages/shared && pnpm dev",
     "start": "pnpm -r start",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "test": "pnpm -r test"
   },
   "dependencies": {
     "@colyseus/core": "^0.16.24",
@@ -26,6 +29,14 @@
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/node": "^20.19.27",
-    "tsup": "^8.5.1"
+    "@typescript-eslint/eslint-plugin": "^8.55.0",
+    "@typescript-eslint/parser": "^8.55.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-unused-imports": "^4.4.1",
+    "prettier": "^3.8.1",
+    "tsup": "^8.5.1",
+    "vitest": "^4.0.18"
   }
 }
