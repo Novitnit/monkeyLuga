@@ -47,7 +47,7 @@ export function integrate(player: PlayerState, dt: number) {
 
 export function resolvePlatformCollisions(
   player: PlayerState,
-  platforms: RectLike[]
+  platforms: (RectLike & {prevX?: number, prevY?: number})[]
 ) {
   for (const p of platforms) {
     const bottomPrev = player.prevY + player.h / 2;
@@ -74,13 +74,13 @@ export function resolvePlatformCollisions(
     }
 
     // Hit left side of platform
-    if (rightPrev <= p.x && rightNow >= p.x && aabb(player, p)) {
+    if (rightPrev <= (p.prevX ?? p.x) && rightNow >= p.x && aabb(player, p)) {
       player.x = p.x - player.w / 2;
       player.vx = 0;
     }
 
     // Hit right side of platform
-    if (leftPrev >= p.x + p.w && leftNow <= p.x + p.w && aabb(player, p)) {
+    if (leftPrev >= (p.prevX ?? p.x) + p.w && leftNow <= p.x + p.w && aabb(player, p)) {
       player.x = p.x + p.w + player.w / 2;
       player.vx = 0;
     }

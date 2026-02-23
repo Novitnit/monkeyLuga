@@ -9,6 +9,8 @@ import { JumpZoneRenderer } from "./render/JumpZoneRenderer";
 import { KillZoneRenderer } from "./render/KillZoneRenderer";
 import { TeleportZoneRenderer } from "./render/TeleportZoneRenderer";
 import { TbcZoneRenderer } from "./render/TbcZoneRenderer";
+import { CheckpointRenderer } from "./render/CheckpointRenderer";
+import { MovingPlatformRenderer } from "./render/MovingPlatformRenderer";
 import { TbcUI } from "./ui/TbcUI";
 import { navigateTo } from "../../routing";
 import { MobileControls } from "./ui/MobileControls";
@@ -36,6 +38,8 @@ export default class GameScene extends Phaser.Scene {
 
     private bg!: Phaser.GameObjects.TileSprite;
     private platformColor: number = 0xb8956a; // default floor color
+
+    private deathCountText!: Phaser.GameObjects.Text;
 
     constructor() {
         super("game");
@@ -70,11 +74,25 @@ export default class GameScene extends Phaser.Scene {
 
         console.log("Joined room:", data.roomId);
 
+        // Handle server-initiated respawn so client updates immediately
+        this.room.onMessage("respawn", (d: { x: number; y: number }) => {
+            const rect = this.players.get(this.myId);
+            if (rect) {
+                rect.x = d.x;
+                rect.y = d.y;
+                this.targets.set(this.myId, { x: d.x, y: d.y });
+                // ensure camera follows new position immediately
+                if (this.players.get(this.myId)) {
+                    this.cameras.main.startFollow(this.players.get(this.myId)!, false);
+                }
+            }
+        });
+
         this.keyA = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.keyD = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.D);
 
         this.cursors = this.input.keyboard!.createCursorKeys();
-        this.cameras.main.setBounds(510, 0, 5000, 705);
+        this.cameras.main.setBounds(510, 0, 10000, 705);
 
         this.mobileControls = new MobileControls(this);
         this.mobileControls.init();
@@ -129,25 +147,27 @@ export default class GameScene extends Phaser.Scene {
         // No manual interact; rely on server-side door collision
     }
 
-    private createBackground() {
-        this.bg = this.add.tileSprite(
-            this.cameras.main.width / 2,
-            this.cameras.main.height / 2,
-            this.cameras.main.width,
-            this.cameras.main.height,
-            "bg"
-        );
-        this.bg.scale = 3.2
-        this.bg.y = this.cameras.main.height/3
-        this.bg.setScrollFactor(0);
-    }
-
-
     private setupUI() {
         this.questionUI = new QuestionUI(this, this.room);
         this.questionUI.init();
         const tbcUI = new TbcUI(this, this.room);
         tbcUI.init();
+
+        // Death count display
+        this.deathCountText = this.add.text(
+            this.cameras.main.width - 10,
+            10,
+            "Deaths: 0",
+            {
+                fontSize: "24px",
+                color: "#ffffff",
+                stroke: "#000000",
+                strokeThickness: 4
+            }
+        );
+        this.deathCountText.setScrollFactor(0);
+        this.deathCountText.setOrigin(1, 0); // Right align
+
         // Interact prompt disabled; door collision triggers questions
         const doorRenderer = new DoorRenderer(this, this.room);
         doorRenderer.init();
@@ -188,12 +208,17 @@ export default class GameScene extends Phaser.Scene {
                 const mainplatformY = 630;
 
                 // console.log(`rx:${player.x}, ry:${player.y} x:${player.x-mainplatformX}, y:${-(player.y-mainplatformY)}`);
-                // console.log(`x:${player.x - mainplatformX}, y:${(-(player.y - mainplatformY)) - player.h / 2}`);
+                console.log(`x:${player.x - mainplatformX}, y:${(-(player.y - mainplatformY)) - player.h / 2}`);
                 // rect.setFillStyle(this.cssColorToNumber(player.color));
 
                 if (dt) {
                     dt.x = player.x;
                     dt.y = player.y;
+                }
+
+                // Update death count if this is the current player
+                if (id === this.myId) {
+                    this.deathCountText.setText(`Deaths: ${player.deathCount}`);
                 }
             });
 
@@ -256,6 +281,14 @@ export default class GameScene extends Phaser.Scene {
         // visualize To-Be-Continued zones
         const tbcZones = new TbcZoneRenderer(this);
         tbcZones.init();
+
+        // visualize checkpoints
+        const checkpointRenderer = new CheckpointRenderer(this, this.room);
+        checkpointRenderer.init();
+
+        // visualize moving platforms
+        const movingPlatformRenderer = new MovingPlatformRenderer(this);
+        movingPlatformRenderer.init();
     }
 
     // Utility: convert CSS color string (#hex or hsl(...)) to Phaser number

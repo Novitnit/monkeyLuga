@@ -5,22 +5,23 @@ export type Platform = {
   h: number;
 };
 
+export type MovingPlatform = {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  moveDistance: number; // Distance to move on X axis
+  moveSpeed: number; // Speed of movement (pixels per second)
+  startPhase?: number; // Starting offset in pixels (0 to moveDistance, e.g., 400 = start 50% of the way right if moveDistance is 800)
+};
+
 type PushBox = {
   id: string;
   x: number;
   y: number;
   w: number;
   h: number;
-};
-
-type InteractBox = {
-  id: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  // เมื่อผู้เล่นตอบคำถามถูก ให้เปิดประตูนี้
-  opensDoorId?: string;
 };
 
 type playerSpawn = {
@@ -32,15 +33,24 @@ export type mapData = {
     platforms: Platform[];
     playerSpawns: playerSpawn;
     pushBoxes?: PushBox[];
-    interactBoxes?: InteractBox[];
+    movingPlatforms?: MovingPlatform[];
   doors?: Door[];
   highJumpZones?: HighJumpZone[];
   killZones?: KillZone[];
   teleportZones?: TeleportZone[];
   tbcZones?: ToBeContinuedZone[];
+  checkpoints?: Checkpoint[];
 }
 
 type Door = {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+};
+
+type Checkpoint = {
   id: string;
   x: number;
   y: number;
@@ -58,10 +68,14 @@ type HighJumpZone = {
 };
 
 type KillZone = {
+  id?: string;
   x: number;
   y: number;
   w: number;
   h: number;
+  // Animation properties (optional)
+  moveDistance?: number; // How far to move on X axis
+  moveSpeed?: number; // Speed of movement (pixels per second)
 };
 
 export type TeleportZone = {

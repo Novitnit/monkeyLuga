@@ -21,7 +21,9 @@ export class QuestionUI {
 
   init() {
     this.room.onMessage("question_show", data => {
-      if (this.container) return;
+      // If a question panel is already open, close it first so
+      // we always rebuild (and reshuffle) choices for the new question.
+      if (this.container) this.close();
       this.build(data as ShowQuestionPayload);
     });
 
@@ -76,8 +78,10 @@ export class QuestionUI {
       ([id, text]) => ({ id, text })
     );
 
+    const shuffledChoices = this.shuffle(choiceArray);
+
     const buttons: Phaser.GameObjects.GameObject[] = [];
-    choiceArray.forEach((choice, index) => {
+    shuffledChoices.forEach((choice, index) => {
       const btnW = Math.max(260, Math.min(panelW - 80, 420));
       const y = height / 2 - (panelH / 2) + 120 + index * spacingY;
 
@@ -126,5 +130,14 @@ export class QuestionUI {
     if (!this.container) return;
     this.container.destroy(true);
     this.container = undefined;
+  }
+
+  private shuffle<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
   }
 }

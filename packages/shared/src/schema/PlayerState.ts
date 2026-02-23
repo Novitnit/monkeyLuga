@@ -19,4 +19,6 @@ export class PlayerState extends Schema {
   @type("string") color = "#ffffff";
 
   @type("boolean") jumpBlocked = false;
+
+  @type("number") deathCount = 0;
 }
